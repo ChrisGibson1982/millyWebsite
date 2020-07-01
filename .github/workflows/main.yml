@@ -42,7 +42,7 @@ jobs:
         # Specify the Az PowerShell script here.
         inlineScript: |
           $Parameters = @{
-            ResourcegroupName    = "ARMDeploymentTest"
+            ResourcegroupName    = "mvg-storage"
             Templatefile         = ".\StorageAccount\azuredeploy.json"
             TemplateParameterfile = ".\StorageAccount\azuredeploy.parameters.json"
             Mode                 = 'Incremental'
@@ -83,7 +83,7 @@ jobs:
           # Specify the Az PowerShell script here.
           inlineScript: |
             $Parameters = @{
-              ResourcegroupName    = "ARMDeploymentTest"
+              ResourcegroupName    = "mvg-storage"
               Templatefile         = ".\StorageAccount\azuredeploy.json"
               TemplateParameterfile = ".\StorageAccount\azuredeploy.parameters.json"
               Mode                 = 'Incremental'

@@ -4,9 +4,7 @@ name: Deploy_ARM
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
-on:
-  [push, pull_request]
-
+on: [push, pull_request]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -17,53 +15,53 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
-    
-    - name: Azure Login
-      uses: Azure/login@v1.1
-      with:
-        creds: ${{ secrets.AZURE_CREDS }}
-    # Set this value to true to enable Azure PowerShell Login in addition to Az CLI login
-        enable-AzPSSession: true
-      continue-on-error: false
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
 
-    - name: Install Module
-      uses: Azure/powershell@v1
-      with:
-        # Specify the Az PowerShell script here.
-        inlineScript: |
-          Install-Module Az.Resources -RequiredVersion 1.12.1-preview -AllowPrerelease -Force -Scope CurrentUser -AllowClobber
-        # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
-        azPSVersion: latest
-      continue-on-error: false
+      - name: Azure Login
+        uses: Azure/login@v1.1
+        with:
+          creds: ${{ secrets.AZURE_CREDS }}
+          # Set this value to true to enable Azure PowerShell Login in addition to Az CLI login
+          enable-AzPSSession: true
+        continue-on-error: false
 
-    - name: Show resources
-      uses: Azure/powershell@v1
-      with:
-        # Specify the Az PowerShell script here.
-        inlineScript: |
-          $Parameters = @{
-            ResourcegroupName    = "mvg-storage"
-            Templatefile         = ".\StorageAccount\azuredeploy.json"
-            TemplateParameterfile = ".\StorageAccount\azuredeploy.parameters.json"
-            Mode                 = 'Incremental'
-          }
-          $Result = Get-AzResourceGroupDeploymentWhatIfResult @Parameters
-          $Result
-        # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
-        azPSVersion: latest
-      continue-on-error: false
+      - name: Install Module
+        uses: Azure/powershell@v1
+        with:
+          # Specify the Az PowerShell script here.
+          inlineScript: |
+            Install-Module Az.Resources -RequiredVersion 1.12.1-preview -AllowPrerelease -Force -Scope CurrentUser -AllowClobber
+          # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
+          azPSVersion: latest
+        continue-on-error: false
 
-    - name: Check for deleted resources
-      uses: Azure/powershell@v1
-      with:
-        # Specify the Az PowerShell script here.
-        inlineScript:  .\Tests\CheckForDeletion.ps1 -ResourceGroup "mvg-storage"
+      - name: Show resources
+        uses: Azure/powershell@v1
+        with:
+          # Specify the Az PowerShell script here.
+          inlineScript: |
+            $Parameters = @{
+              ResourcegroupName    = "mvg-storage"
+              Templatefile         = ".\StorageAccount\azuredeploy.json"
+              TemplateParameterfile = ".\StorageAccount\azuredeploy.parameters.json"
+              Mode                 = 'Incremental'
+            }
+            $Result = Get-AzResourceGroupDeploymentWhatIfResult @Parameters
+            $Result
+          # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
+          azPSVersion: latest
+        continue-on-error: false
 
-        # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
-        azPSVersion: latest
-      continue-on-error: false
+      - name: Check for deleted resources
+        uses: Azure/powershell@v1
+        with:
+          # Specify the Az PowerShell script here.
+          inlineScript: .\Tests\CheckForDeletion.ps1 -ResourceGroup "mvg-storage"
+
+          # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
+          azPSVersion: latest
+        continue-on-error: false
 
   # This workflow contains a single job called "build"
   deploy:
@@ -72,14 +70,13 @@ jobs:
     if: github.ref == 'refs/heads/master'
     needs: build
     steps:
-
       - uses: actions/checkout@v2
-    
+
       - name: Azure Login
         uses: Azure/login@v1.1
         with:
           creds: ${{ secrets.AZURE_CREDS }}
-        # Set this value to true to enable Azure PowerShell Login in addition to Az CLI login
+          # Set this value to true to enable Azure PowerShell Login in addition to Az CLI login
           enable-AzPSSession: true
         continue-on-error: false
 
@@ -99,11 +96,11 @@ jobs:
           # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
           azPSVersion: latest
         continue-on-error: false
-    
+
       - name: Azure Blob Storage Upload
         uses: bacongobbler/azure-blob-storage-upload@v1.1.0
         with:
           connection_string: ${{ secrets.CON_STRING }}
-          container_name: '$web'
+          container_name: "$web"
           source_dir: .\siteContent
         continue-on-error: false

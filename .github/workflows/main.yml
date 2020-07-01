@@ -97,10 +97,11 @@ jobs:
           azPSVersion: latest
         continue-on-error: false
 
-      - name: Azure Blob Storage Upload
-        uses: bacongobbler/azure-blob-storage-upload@v1.1.0
-        with:
-          connection_string: ${{ secrets.CON_STRING }}
-          container_name: "$web"
-          source_dir: .\siteContent
-        continue-on-error: false
+      - name: Copy Site Content
+              uses: Azure/powershell@v1
+              with:
+                # Specify the Az PowerShell script here.
+                inlineScript: |
+                    az storage blob sync -c "$web" --connection-string "${{ secrets.CON_STRING }}"  -s "./siteContent"
+                azPSVersion: latest
+              continue-on-error: false

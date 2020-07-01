@@ -6,7 +6,6 @@ name: Deploy_ARM
 # events but only for the master branch
 on: [push, pull_request]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
   deploy:
@@ -59,7 +58,6 @@ jobs:
       - name: Deploy Resources
         uses: Azure/powershell@v1
         with:
-          # Specify the Az PowerShell script here.
           inlineScript: |
             $Parameters = @{
               ResourcegroupName    = "mvg-storage"
@@ -75,7 +73,6 @@ jobs:
       - name: Enable Static Webiste on Storage Account
         uses: Azure/powershell@v1
         with:
-          # Specify the Az PowerShell script here.
           inlineScript: |
                   write-output "Get Storage Account"
                   $storageAccount = get-AzStorageAccount -ResourceGroupName "mvg-storage" -AccountName "nannasbirthdaycards"
@@ -86,23 +83,12 @@ jobs:
                   Write-output "Enable Static Website"
                   Enable-AzStorageStaticWebsite -Context $ctx -IndexDocument  "index.html" -ErrorDocument404Path "404.html"
 
-
-                  #$customDomainHttps = Get-AzCdnCustomDomain -CustomDomainName $(customDomainName) -EndpointName $(endpointName) -ProfileName $(cdnProfileName) -ResourceGroupName $(resourceGroup_name)
-
-                  #If (!(($customDomainHttps.CustomHttpsProvisioningState -eq "Enabled") -or ($customDomainHttps.CustomHttpsProvisioningState -eq "Enabing"))) {
-                  #  Write-output "Enable Custom Https on CDN Endpoint"
-                  #  Enable-AzCdnCustomDomainHttps -ResourceGroupName $(resourceGroup_name) -ProfileName $(cdnProfileName) -EndpointName $(endpointName) -CustomDomainName $(customDomainName)
-                  #}
-                  #else {
-                  #  Write-output "Https already enabled on custom end point"
-                  #}
           azPSVersion: latest
         continue-on-error: false
 
       - name: Copy Site Content
         uses: Azure/powershell@v1
         with:
-          # Specify the Az PowerShell script here.
           inlineScript: |
               az storage blob sync --container "`$web" --connection-string "${{ secrets.CON_STRING }}"  -s "./siteContent"
           azPSVersion: latest

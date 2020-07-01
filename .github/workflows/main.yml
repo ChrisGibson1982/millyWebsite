@@ -9,7 +9,7 @@ on: [push, pull_request]
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
-  build:
+  deploy:
 
     runs-on: windows-latest
 
@@ -56,22 +56,6 @@ jobs:
           azPSVersion: latest
         continue-on-error: false
 
-  deploy:
-
-    runs-on: windows-latest
-    if: github.ref == 'refs/heads/master'
-    needs: build
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Azure Login
-        uses: Azure/login@v1.1
-        with:
-          creds: ${{ secrets.AZURE_CREDS }}
-          # Set this value to true to enable Azure PowerShell Login in addition to Az CLI login
-          enable-AzPSSession: true
-        continue-on-error: false
-
       - name: Deploy Resources
         uses: Azure/powershell@v1
         with:
@@ -114,7 +98,6 @@ jobs:
                   #}
           azPSVersion: latest
         continue-on-error: false
-
 
       - name: Copy Site Content
         uses: Azure/powershell@v1

@@ -8,12 +8,12 @@ on: [push, pull_request]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
+
   build:
-    # The type of runner that the job will run on
+
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -22,24 +22,21 @@ jobs:
         uses: Azure/login@v1.1
         with:
           creds: ${{ secrets.AZURE_CREDS }}
-          # Set this value to true to enable Azure PowerShell Login in addition to Az CLI login
           enable-AzPSSession: true
         continue-on-error: false
 
       - name: Install Module
         uses: Azure/powershell@v1
         with:
-          # Specify the Az PowerShell script here.
           inlineScript: |
             Install-Module Az.Resources -RequiredVersion 1.12.1-preview -AllowPrerelease -Force -Scope CurrentUser -AllowClobber
-          # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
+
           azPSVersion: latest
         continue-on-error: false
 
       - name: Show resources
         uses: Azure/powershell@v1
         with:
-          # Specify the Az PowerShell script here.
           inlineScript: |
             $Parameters = @{
               ResourcegroupName    = "mvg-storage"
@@ -49,23 +46,18 @@ jobs:
             }
             $Result = Get-AzResourceGroupDeploymentWhatIfResult @Parameters
             $Result
-          # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
           azPSVersion: latest
         continue-on-error: false
 
       - name: Check for deleted resources
         uses: Azure/powershell@v1
         with:
-          # Specify the Az PowerShell script here.
           inlineScript: .\Tests\CheckForDeletion.ps1 -ResourceGroup "mvg-storage"
-
-          # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
           azPSVersion: latest
         continue-on-error: false
 
-  # This workflow contains a single job called "build"
   deploy:
-    # The type of runner that the job will run on
+
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     needs: build
@@ -93,9 +85,36 @@ jobs:
             }
             $Result = New-AZResourceGroupDeployment @Parameters
             $Result
-          # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
           azPSVersion: latest
         continue-on-error: false
+
+      - name: Enable Static Webiste on Storage Account
+        uses: Azure/powershell@v1
+        with:
+          # Specify the Az PowerShell script here.
+          inlineScript: |
+                  write-output "Get Storage Account"
+                  $storageAccount = get-AzStorageAccount -ResourceGroupName "mvg-storage" -AccountName "nannasbirthdaycards"
+
+                  write-output "Get Storage Account Context"
+                  $ctx = $storageAccount.Context
+
+                  Write-output "Enable Static Website"
+                  Enable-AzStorageStaticWebsite -Context $ctx -IndexDocument  "index.html" -ErrorDocument404Path "404.html"
+
+
+                  #$customDomainHttps = Get-AzCdnCustomDomain -CustomDomainName $(customDomainName) -EndpointName $(endpointName) -ProfileName $(cdnProfileName) -ResourceGroupName $(resourceGroup_name)
+
+                  #If (!(($customDomainHttps.CustomHttpsProvisioningState -eq "Enabled") -or ($customDomainHttps.CustomHttpsProvisioningState -eq "Enabing"))) {
+                  #  Write-output "Enable Custom Https on CDN Endpoint"
+                  #  Enable-AzCdnCustomDomainHttps -ResourceGroupName $(resourceGroup_name) -ProfileName $(cdnProfileName) -EndpointName $(endpointName) -CustomDomainName $(customDomainName)
+                  #}
+                  #else {
+                  #  Write-output "Https already enabled on custom end point"
+                  #}
+          azPSVersion: latest
+        continue-on-error: false
+
 
       - name: Copy Site Content
         uses: Azure/powershell@v1

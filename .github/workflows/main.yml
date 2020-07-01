@@ -121,6 +121,6 @@ jobs:
         with:
           # Specify the Az PowerShell script here.
           inlineScript: |
-              az storage blob sync -c "$web" --connection-string "${{ secrets.CON_STRING }}"  -s "./siteContent"
+              az storage blob sync --container "`$web" --connection-string "${{ secrets.CON_STRING }}"  -s "./siteContent"
           azPSVersion: latest
         continue-on-error: false

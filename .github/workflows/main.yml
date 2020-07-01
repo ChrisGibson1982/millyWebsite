@@ -1,11 +1,12 @@
 # This is a basic workflow to help you get started with Actions
 
-name: arm_template_deploy
+name: Deploy_ARM
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
   [push, pull_request]
+
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -18,25 +19,14 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-
-    # Runs a single command using the runners shell
-    - name: Run a one-line script
-      run: echo Hello, world!
-
-    # Runs a set of commands using the runners shell
-    - name: Run a multi-line script
-      run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
-        
+    
     - name: Azure Login
       uses: Azure/login@v1.1
       with:
-        # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
         creds: ${{ secrets.AZURE_CREDS }}
-        # Set this value to true to enable Azure PowerShell Login in addition to Az CLI login
+    # Set this value to true to enable Azure PowerShell Login in addition to Az CLI login
         enable-AzPSSession: true
-        
+
     - name: Install Module
       uses: Azure/powershell@v1
       with:
@@ -45,7 +35,7 @@ jobs:
           Install-Module Az.Resources -RequiredVersion 1.12.1-preview -AllowPrerelease -Force -Scope CurrentUser -AllowClobber
         # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
         azPSVersion: latest
-        
+
     - name: Show resources
       uses: Azure/powershell@v1
       with:
@@ -61,3 +51,44 @@ jobs:
           $Result
         # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
         azPSVersion: latest
+    - name: Check for deleted resources
+      uses: Azure/powershell@v1
+      with:
+        # Specify the Az PowerShell script here.
+        inlineScript:  .\Tests\CheckForDeletion.ps1 -ResourceGroup ARMDeploymentTest
+
+        # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
+        azPSVersion: latest
+
+  # This workflow contains a single job called "build"
+  deploy:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    steps:
+
+      - uses: actions/checkout@v2
+    
+      - name: Azure Login
+        uses: Azure/login@v1.1
+        with:
+          creds: ${{ secrets.AZURE_CREDS }}
+        # Set this value to true to enable Azure PowerShell Login in addition to Az CLI login
+          enable-AzPSSession: true
+
+      - name: Deploy Resources
+        uses: Azure/powershell@v1
+        with:
+          # Specify the Az PowerShell script here.
+          inlineScript: |
+            $Parameters = @{
+              ResourcegroupName    = "ARMDeploymentTest"
+              Templatefile         = ".\StorageAccount\azuredeploy.json"
+              TemplateParameterfile = ".\StorageAccount\azuredeploy.parameters.json"
+              Mode                 = 'Incremental'
+            }
+            $Result = New-AZResourceGroupDeployment @Parameters
+            $Result
+          # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
+          azPSVersion: latest

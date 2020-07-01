@@ -98,10 +98,10 @@ jobs:
         continue-on-error: false
 
       - name: Copy Site Content
-              uses: Azure/powershell@v1
-              with:
-                # Specify the Az PowerShell script here.
-                inlineScript: |
-                    az storage blob sync -c "$web" --connection-string "${{ secrets.CON_STRING }}"  -s "./siteContent"
-                azPSVersion: latest
-              continue-on-error: false
+        uses: Azure/powershell@v1
+        with:
+          # Specify the Az PowerShell script here.
+          inlineScript: |
+              az storage blob sync -c "$web" --connection-string "${{ secrets.CON_STRING }}"  -s "./siteContent"
+          azPSVersion: latest
+        continue-on-error: false

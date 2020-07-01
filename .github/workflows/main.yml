@@ -26,6 +26,7 @@ jobs:
         creds: ${{ secrets.AZURE_CREDS }}
     # Set this value to true to enable Azure PowerShell Login in addition to Az CLI login
         enable-AzPSSession: true
+      continue-on-error: false
 
     - name: Install Module
       uses: Azure/powershell@v1
@@ -35,6 +36,7 @@ jobs:
           Install-Module Az.Resources -RequiredVersion 1.12.1-preview -AllowPrerelease -Force -Scope CurrentUser -AllowClobber
         # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
         azPSVersion: latest
+      continue-on-error: false
 
     - name: Show resources
       uses: Azure/powershell@v1
@@ -51,6 +53,7 @@ jobs:
           $Result
         # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
         azPSVersion: latest
+      continue-on-error: false
 
     - name: Check for deleted resources
       uses: Azure/powershell@v1
@@ -60,6 +63,7 @@ jobs:
 
         # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
         azPSVersion: latest
+      continue-on-error: false
 
   # This workflow contains a single job called "build"
   deploy:
@@ -77,6 +81,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDS }}
         # Set this value to true to enable Azure PowerShell Login in addition to Az CLI login
           enable-AzPSSession: true
+        continue-on-error: false
 
       - name: Deploy Resources
         uses: Azure/powershell@v1
@@ -93,3 +98,4 @@ jobs:
             $Result
           # Azure PS version to be used to execute the script, example: 1.8.0, 2.8.0, 3.4.0. To use the latest version, specify "latest".
           azPSVersion: latest
+        continue-on-error: false
